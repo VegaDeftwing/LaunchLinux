@@ -1,31 +1,37 @@
+#   0   1   2   3   4   5   6   7      8
+# +---+---+---+---+---+---+---+---+
+# |0/0|1/0|   |   |   |   |   |   |         0
+# +---+---+---+---+---+---+---+---+
+#
+# +---+---+---+---+---+---+---+---+  +---+
+# |0/1|   |   |   |   |   |   |   |  |   |  1
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |   |   |   |  |   |  2
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |5/3|   |   |  |   |  3
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |   |   |   |  |   |  4
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |   |   |   |  |   |  5
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |4/6|   |   |   |  |   |  6
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |   |   |   |  |   |  7
+# +---+---+---+---+---+---+---+---+  +---+
+# |   |   |   |   |   |   |   |   |  |8/8|  8
+# +---+---+---+---+---+---+---+---+  +---+
 import alsaaudio
 import sys
 import launchpad_py as launchpad
 from pygame import time
 from subprocess import call
 import psutil
-
-single = 0
-mpdstate = 1
-
-def verification(name):
-    for pid in psutil.pids():
-        p = psutil.Process(pid)
-        #print p.name()
-        if p.name() == name:
-            return ("running")
-
-def getvol():
-    m = alsaaudio.Mixer()
-    vol = m.getvolume()
-    return vol
+import i3
 
 #Launchpad init
 lp = launchpad.Launchpad();
 lp = launchpad.LaunchpadMk2()
 
-print verification("vivaldi-bin")
-print verification("meh")
 
 if lp.Check( 0, "mk2" ):
     lp = launchpad.LaunchpadMk2()
@@ -34,10 +40,54 @@ if lp.Check( 0, "mk2" ):
         mode = "Mk2"
         lp.Reset()
 
-lp.Reset()
+single = 0
+mpdstate = 1
 
-while 1:
-    time.wait(50)
+def opendev():
+    i3.workspace("Dev")
+    i3.workspace("Atom")
+    i3.workspace("GitKraken")
+    return
+# def opensecure:
+#     i3.workspace("Atom")
+#     i3.workspace("Atom")
+#     i3.workspace("Atom")
+
+def openchat():
+    i3.workspace("GenChat")
+    i3.workspace("GenChat2")
+    i3.workspace("Telegram")
+
+def openweb():
+    i3.workspace("Vivaldi")
+    i3.workspace("Telegram")
+    i3.workspace("Atom")
+
+def getworkspacelist():
+    workspaces = i3.get_workspaces()
+    workspacelist = ['default']
+    for workspace in workspaces:
+            name = workspace['name']
+            workspacelist.append(name)
+    return (workspacelist)
+
+def verification(name):
+    for pid in psutil.pids():
+        p = psutil.Process(pid)
+        #print p.name()
+        if p.name() == name:
+            return ("running")
+
+# print verification("vivaldi-bin")
+# print verification("meh")
+
+def getvol():
+    m = alsaaudio.Mixer()
+    vol = m.getvolume()
+    return vol
+
+
+def displayvol():
     vol = getvol()
     vol = int(vol[0])
     y = vol / 10.8
@@ -69,29 +119,7 @@ while 1:
         for j in range (0, int(y)):
             lp.LedCtrlXY( 0, j, 0, 0, 0 )
 
-#   0   1   2   3   4   5   6   7      8
-# +---+---+---+---+---+---+---+---+
-# |0/0|1/0|   |   |   |   |   |   |         0
-# +---+---+---+---+---+---+---+---+
-#
-# +---+---+---+---+---+---+---+---+  +---+
-# |0/1|   |   |   |   |   |   |   |  |   |  1
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  2
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |5/3|   |   |  |   |  3
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  4
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  5
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |4/6|   |   |   |  |   |  6
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  7
-# +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |8/8|  8
-# +---+---+---+---+---+---+---+---+  +---+
-
+def updatevol():
     bs = lp.ButtonStateXY()
     #if bs.count(0) > 1:
     if len(bs) > 1:
@@ -140,5 +168,56 @@ while 1:
                 lp.LedCtrlXY( 1, 5, 0, 0, 0 )
                 single = 0
 
+def testopen():
+    workspacelist = getworkspacelist()
+    if "Atom" in workspacelist:
+        lp.LedCtrlXY( 6, 6, 0, 255, 0 )
+    else:
+        lp.LedCtrlXY( 6, 6, 0, 0, 0 )
 
-#/proc/asound/card*/pcm*/sub*/status | grep RUNNING to detect if sound being used
+    if "Dev" in workspacelist:
+        lp.LedCtrlXY( 7, 6, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 7, 6, 0, 0, 0 )
+
+    if "GitKraken" in workspacelist:
+        lp.LedCtrlXY( 5, 6, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 5, 6, 0, 0, 0 )
+
+    if "Vivaldi" in workspacelist:
+        lp.LedCtrlXY( 6, 8, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 6, 8, 0, 0, 0 )
+
+    if "Telegram" in workspacelist:
+        lp.LedCtrlXY( 7, 8, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 7, 8, 0, 0, 0 )
+
+    if "GenChat" in workspacelist:
+        lp.LedCtrlXY( 5, 8, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 5, 8, 0, 0, 0 )
+
+    if "GenChat2" in workspacelist:
+        lp.LedCtrlXY( 6, 7, 0, 0, 255 )
+    else:
+        lp.LedCtrlXY( 6, 7, 0, 0, 0 )
+
+lastvol = 0
+
+while 1:
+    time.wait(50)
+    bs = lp.ButtonStateXY()
+    if getvol != lastvol:
+        displayvol()
+
+    lastvol = getvol()
+
+    updatevol()
+    
+    if len(bs) > 1:
+        if bs[0] == 6 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("Atom")
+    testopen()

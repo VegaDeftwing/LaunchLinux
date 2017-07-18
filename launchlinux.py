@@ -35,7 +35,7 @@ import i3
 import os
 
 print("Starting LaunchLinux, a python based hardware linux control panel using the Novation Launchpad")
-print("Version 2.2")
+print("Version 2.3")
 print("Project by VegaDeftwing")
 print("Launchpad.py by FMMT666")
 print("Special Thanks to FMMT66 for helping me with a facepalm moment.")
@@ -47,6 +47,7 @@ print("i3 python by Ziberna")
 # 2.0 added i3 control
 # 2.1 improved i3 control
 # 2.2.2 updated with wal control, refactoring
+# 2.3 Added CPU and RAM
 
 
 
@@ -71,6 +72,9 @@ lp.LedCtrlXY( 7, 5, 10, 10, 10 )
 lp.LedCtrlXY( 1, 8, 0, 20, 100 )
 lp.LedCtrlXY( 1, 7, 0, 0, 10 )
 lp.LedCtrlXY( 1, 6, 0, 0, 10 )
+lp.LedCtrlXY( 1, 5, 0, 20, 0 )
+lp.LedCtrlXY( 1, 4, 20, 0, 0 )
+
 
 #Workspace groups to be opened by corosponding launch arrows,
 #if you change the function name be sure to change it where it's called too!
@@ -164,7 +168,7 @@ def displayvol():
         lp.LedCtrlXY( 0, i, r, g, b )
     if int(y) != 0:
         for j in range (0, int(y)):
-            lp.LedCtrlXY( 0, j, 0, 0, 0 )
+            lp.LedCtrlXY( 0, j, 0, 0, 10 )
 
 # TODO:
 #def gettemp():
@@ -175,8 +179,49 @@ def displayvol():
 # TODO:
 # NOTE: display the following using a single 'pixel'
 # and the built in launchpad colors so we get decent speed
-# def CPUusage():
-# def RAMusage():
+
+def displayRAM():
+    RAM = psutil.virtual_memory()
+    RAM = RAM[2]
+    RAM = int(RAM)
+    if RAM < 30:
+        r = 0
+        g = RAM * 2
+        b = RAM * 7
+    if RAM > 30 and RAM < 62:
+        r = RAM / 2
+        g = RAM * 4
+        b = RAM * 2
+    if RAM > 62:
+        r = RAM * 2
+        g = 200 - RAM * 2
+        b = 0
+    if RAM > 90:
+        r = 255
+        g = 0
+        b = 0
+    lp.LedCtrlXY( 2, 1, r, g, b )
+
+def displayCPU():
+    CPU = psutil.cpu_percent(interval=1)
+    CPU = int(CPU)
+    if CPU < 30:
+        r = CPU
+        g = CPU * 2 + 10
+        b = CPU * 7 + 10
+    if CPU > 30 and CPU < 62:
+        r = (CPU - 50) * CPU
+        g = (CPU - 40) * 15
+        b = CPU - int(CPU / 1.2)
+    if CPU > 66:
+        r = CPU * 2
+        g = 200 - CPU * 2
+        b = 0
+    if CPU > 98:
+        r = 255
+        g = 0
+        b = 0
+    lp.LedCtrlXY( 1, 1, r, g, b )
 
 def updatevol(bs):
     if len(bs) > 1:
@@ -220,14 +265,13 @@ def mpdctrl(bs):
             lp.LedCtrlXY( 1, 6, 0, 0, 10 )
 
         if bs[0] == 1 and bs[1] == 5 and bs[2] == 127:
-            if single == 0:
-                call(["mpc", "single","on"])
-                lp.LedCtrlXY( 1, 5, 255, 0, 255 )
-                single = 1
-            else:
-                call(["mpc", "single","off"])
-                lp.LedCtrlXY( 1, 5, 1, 0, 1 )
-                single = 0
+            call(["mpc", "single","on"])
+            lp.LedCtrlXY( 1, 5, 0, 20, 0 )
+            single = 1
+        if bs[0] == 1 and bs[1] == 4 and bs[2] == 127:
+            call(["mpc", "single","off"])
+            lp.LedCtrlXY( 1, 4, 20, 0, 0 )
+            single = 0
 
 def testworkspace(workspace, xpos, ypos, red, green, blue):
 
@@ -236,7 +280,7 @@ def testworkspace(workspace, xpos, ypos, red, green, blue):
     if workspace in workspacelist:
         lp.LedCtrlXY( xpos, ypos, red, green, blue )
     else:
-        lp.LedCtrlXY( xpos, ypos, 0, 0, 0 )
+        lp.LedCtrlXY( xpos, ypos, 0, 5, 5 )
 
 def testopen():
     workspacelist = getworkspacelist()
@@ -316,7 +360,7 @@ def wal(bs):
 ### program though, so, you're millage may varry. using the default
 ### of 50 for the wait should be perfectly responsive for most people
 ### though.
-
+i = 0
 
 while 1:
     time.wait(50)
@@ -332,6 +376,15 @@ while 1:
     wal(bs)
     workspaceswitch(bs)
     testopen()
+
+    #CPU and RAM display takes a lot of time and can add a lot of latency, this helps
+    if i == 50:
+        displayRAM()
+    if i == 100:
+        displayCPU()
+        i = 0
+
+    i = i + 1
 
 
 #The progams really should never actually get here, so, if it does...

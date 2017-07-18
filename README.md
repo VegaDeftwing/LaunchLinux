@@ -30,5 +30,6 @@ and to Ziberna for i3-python
 * 1.1 added MPD control, uploaded to GitHub
 * 2.0 added i3 control
 * 2.1 improved i3 control
+* 2.2.2 fixed mpd ctrl, added wal.sh control, made thing a bit cleaner
 ## Current Version
-2.2.2 fixed mpd ctrl, added wal.sh control, made thing a bit cleaner
+* 2.3 Added CPU and RAM usage

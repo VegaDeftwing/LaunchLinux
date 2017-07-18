@@ -32,6 +32,7 @@ from pygame import time
 from subprocess import call
 import psutil
 import i3
+import os
 
 print("Starting LaunchLinux, a python based hardware linux control panel using the Novation Launchpad")
 print("Version 2.2")
@@ -45,17 +46,12 @@ print("i3 python by Ziberna")
 # 1.1 added MPD control, uploaded to GitHub
 # 2.0 added i3 control
 # 2.1 improved i3 control
-# 2.2.1p refactored some code in order to make
-#       it possible to reconfigure the workspace names,
-#       positions, and colors easier later
+# 2.2.2 updated with wal control, refactoring
+
 
 
 ### TODO: put config vars here, inc workspace and active modules
 
-#State Tracking, inital state config
-single = 0
-mpdstate = 1
-lastvol = 0
 
 #Launchpad init
 lp = launchpad.Launchpad();
@@ -67,6 +63,14 @@ if lp.Check( 0, "mk2" ):
         lp.Reset()
 
 print("Launchpad Mk2 opened, I hope?")
+
+#State Tracking, inital state config
+single = 0
+lastvol = 0
+lp.LedCtrlXY( 7, 5, 10, 10, 10 )
+lp.LedCtrlXY( 1, 8, 0, 20, 100 )
+lp.LedCtrlXY( 1, 7, 0, 0, 10 )
+lp.LedCtrlXY( 1, 6, 0, 0, 10 )
 
 #Workspace groups to be opened by corosponding launch arrows,
 #if you change the function name be sure to change it where it's called too!
@@ -133,7 +137,7 @@ def getvol():
 def displayvol():
     vol = getvol()
     vol = int(vol[0])
-    y = vol / 10.8
+    y = vol / 11.1
     if vol < 40:
         r = 0
         g = vol
@@ -146,7 +150,7 @@ def displayvol():
         r = vol * vol
         g = 50  -  (vol / 2)
         b =  vol / 6 - (vol  /  7)
-    if vol < 13:
+    if vol < 11:
         y = 0
     y = int(9 - y)
 
@@ -193,37 +197,38 @@ def updatevol(bs):
             # storing these as local states would be much  #
             # faster, but, I worry that lights may 'stick' #
             ################################################
+def mpdctrl(bs):
+    if len(bs) > 1:
+        if bs[0] == 1 and bs[1] == 8 and bs[2] == 127:
+            call(["mpc", "toggle"])
+            lp.LedCtrlXY( 1, 8, 0, 20, 100 )
 
-        # if bs[0] == 1 and bs[1] == 8 and bs[2] == 127:
-        #     if mpdstate == 1:
-        #         call(["mpc", "pause"])
-        #         lp.LedCtrlXY( 1, 8, 0, 0, 0 )
-        #         mpdstate = 0
-        #     else:
-        #         call(["mpc", "play"])
-        #         lp.LedCtrlXY( 1, 8, 0, 255, 50 )
-        #         mpdstate = 1
-        #
-        # if bs[0] == 1 and bs[1] == 7 and bs[2] == 127:
-        #     call(["mpc", "next"])
-        #     lp.LedCtrlXY( 1, 7, 0, 0, 255 )
-        # if bs[0] == 1 and bs[1] == 7 and bs[2] == 0:
-        #     lp.LedCtrlXY( 1, 7, 0, 0, 0 )
-        # if bs[0] == 1 and bs[1] == 6 and bs[2] == 127:
-        #     call(["mpc", "prev"])
-        #     lp.LedCtrlXY( 1, 6, 0, 0, 255 )
-        # if bs[0] == 1 and bs[1] == 6 and bs[2] == 0:
-        #     lp.LedCtrlXY( 1, 6, 0, 0, 0 )
-        #
-        # if bs[0] == 1 and bs[1] == 5 and bs[2] == 127:
-        #     if single == 0:
-        #         call(["mpc", "single","on"])
-        #         lp.LedCtrlXY( 1, 5, 255, 0, 255 )
-        #         single = 1
-        #     else:
-        #         call(["mpc", "single","off"])
-        #         lp.LedCtrlXY( 1, 5, 0, 0, 0 )
-        #         single = 0
+        if bs[0] == 1 and bs[1] == 7 and bs[2] == 127:
+            call(["mpc", "next"])
+            lp.LedCtrlXY( 1, 7, 0, 0, 255 )
+            time.wait(50)
+
+        if bs[0] == 1 and bs[1] == 7 and bs[2] == 0:
+            lp.LedCtrlXY( 1, 7, 0, 0, 10 )
+
+        if bs[0] == 1 and bs[1] == 6 and bs[2] == 127:
+            call(["mpc", "prev"])
+            lp.LedCtrlXY( 1, 6, 0, 0, 255 )
+            time.wait(50)
+
+        if bs[0] == 1 and bs[1] == 6 and bs[2] == 0:
+            lp.LedCtrlXY( 1, 6, 0, 0, 10 )
+
+        if bs[0] == 1 and bs[1] == 5 and bs[2] == 127:
+            if single == 0:
+                call(["mpc", "single","on"])
+                lp.LedCtrlXY( 1, 5, 255, 0, 255 )
+                single = 1
+            else:
+                call(["mpc", "single","off"])
+                lp.LedCtrlXY( 1, 5, 1, 0, 1 )
+                single = 0
+
 def testworkspace(workspace, xpos, ypos, red, green, blue):
 
     workspacelist = getworkspacelist() + getworkspacenumlist()
@@ -284,6 +289,21 @@ def workspaceswitch(bs):
         workspaceswitcher("9:9",4,8)
         #workspaceswitcher("10:10",6,6)
 
+def wal(bs):
+    if len(bs) > 1:
+        posx = 7
+        posy = 5
+        if bs[0] == posx and bs[1] == posy and bs[2] == 127:
+            #os.system("wal -i /run/media/vega/RAID/Pictures/wal")
+            #TODO: Change this from using wal.sh to wal.py. For some reason
+            # the python version crashes everything
+            lp.LedCtrlXY( posx, posy, 255, 0, 0 )
+            call(["wal.sh", "-i", "/run/media/vega/RAID/Pictures/wal"])
+            print("##############################")
+            print("NEW COLORS SET")
+            print("##############################")
+            lp.LedCtrlXY( posx, posy, 10, 10, 10 )
+
 ### MAIN LOOP
 ### This is where the buton state (bs) is retrived in order
 ### to pass it into everything else
@@ -297,17 +317,22 @@ def workspaceswitch(bs):
 ### of 50 for the wait should be perfectly responsive for most people
 ### though.
 
+
 while 1:
     time.wait(50)
     bs = lp.ButtonStateXY()
+
     if getvol() != lastvol:
         displayvol()
 
     lastvol = getvol()
 
     updatevol(bs)
+    mpdctrl(bs)
+    wal(bs)
     workspaceswitch(bs)
     testopen()
+
 
 #The progams really should never actually get here, so, if it does...
 print("Huston, We have a problem.")

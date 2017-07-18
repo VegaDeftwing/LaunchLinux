@@ -22,7 +22,7 @@ Soon you will be able to control:
 all directly from your Novation LaunchPad Mk2
 (others may come later, or might even work already?)
 
-Thanks to FMMT666 for the LaunchPad.py library that makes it all possible
+Thanks to *FMMT666* for the LaunchPad.py library that makes it all possible
 and to Ziberna for i3-python
 
 ## CHANGELOG:
@@ -31,6 +31,4 @@ and to Ziberna for i3-python
 * 2.0 added i3 control
 * 2.1 improved i3 control
 ## Current Version
-2.2p removed mpd control temporarily,
-      setup TODOs and NOTEs for further
-      advancement, some code moved, meh
+2.2.2 fixed mpd ctrl, added wal.sh control, made thing a bit cleaner

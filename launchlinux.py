@@ -1,4 +1,4 @@
-!/usr/bin/python2
+#!/usr/bin/python2
 # coding: latin-1
 
 #   0   1   2   3   4   5   6   7      8
@@ -45,15 +45,17 @@ print("i3 python by Ziberna")
 # 1.1 added MPD control, uploaded to GitHub
 # 2.0 added i3 control
 # 2.1 improved i3 control
-# 2.2p removed mpd control temporarily,
-#       setup TODOs and NOTEs for further
-#       advancement, some code moved, meh
+# 2.2.1p refactored some code in order to make
+#       it possible to reconfigure the workspace names,
+#       positions, and colors easier later
+
 
 ### TODO: put config vars here, inc workspace and active modules
 
 #State Tracking, inital state config
 single = 0
 mpdstate = 1
+lastvol = 0
 
 #Launchpad init
 lp = launchpad.Launchpad();
@@ -222,101 +224,78 @@ def updatevol(bs):
         #         call(["mpc", "single","off"])
         #         lp.LedCtrlXY( 1, 5, 0, 0, 0 )
         #         single = 0
+def testworkspace(workspace, xpos, ypos, red, green, blue):
+
+    workspacelist = getworkspacelist() + getworkspacenumlist()
+
+    if workspace in workspacelist:
+        lp.LedCtrlXY( xpos, ypos, red, green, blue )
+    else:
+        lp.LedCtrlXY( xpos, ypos, 0, 0, 0 )
 
 def testopen():
     workspacelist = getworkspacelist()
     workspacenumlist = getworkspacenumlist()
 
-    #TODO: using a button state test from above,
-    # set all of these checks into a function so we're not redundantly turring the light off,
-    # or, at least if we are, refactoring is easier
+    #Test workspace by name
+    testworkspace("Atom",6,6,0,255,25)
+    testworkspace("Dev",7,6,255,0,140)
+    testworkspace("GitKraken",5,6,20,0,131)
+    testworkspace("Vivaldi",6,8,255,0,0)
+    testworkspace("Telegram",5,8,0,215,255)
+    testworkspace("GenChat",7,8,86,66,255)
+    testworkspace("GenChat2",6,7,66,164,255)
+    #Testing worspace numbers
+    testworkspace(1,2,6,66,164,255)
+    testworkspace(2,3,6,66,164,255)
+    testworkspace(3,4,6,66,164,255)
+    testworkspace(4,2,7,66,164,255)
+    testworkspace(5,3,7,66,164,255)
+    testworkspace(6,4,7,66,164,255)
+    testworkspace(7,2,8,66,164,255)
+    testworkspace(8,3,8,66,164,255)
+    testworkspace(9,4,8,66,164,255)
+    #testworkspace(10,2,6,66,164,255)
 
-    if "Atom" in workspacelist:
-        lp.LedCtrlXY( 6, 6, 0, 255, 25 )
-    else:
-        lp.LedCtrlXY( 6, 6, 0, 0, 0 )
+def workspaceswitcher(workspace, xpos, ypos):
+    if bs[0] == xpos and bs[1] == ypos and bs[2] == 127:
+        i3.workspace(workspace)
 
-    if "Dev" in workspacelist:
-        lp.LedCtrlXY( 7, 6, 255, 0, 140 )
-    else:
-        lp.LedCtrlXY( 7, 6, 0, 0, 0 )
 
-    if "GitKraken" in workspacelist:
-        lp.LedCtrlXY( 5, 6, 20, 0, 131 )
-    else:
-        lp.LedCtrlXY( 5, 6, 0, 0, 0 )
+#TODO: Define workspace names and pos on LP at top of file
 
-    if "Vivaldi" in workspacelist:
-        lp.LedCtrlXY( 6, 8, 255, 0, 0 )
-    else:
-        lp.LedCtrlXY( 6, 8, 0, 0, 0 )
+def workspaceswitch(bs):
+    if len(bs) > 1:
+        workspaceswitcher("Atom",6,6)
+        workspaceswitcher("GitKraken",5,6)
+        workspaceswitcher("Dev",7,6)
+        workspaceswitcher("Vivaldi",6,8)
+        workspaceswitcher("Telegram",5,8)
+        workspaceswitcher("GenChat",7,8)
+        workspaceswitcher("GenChat2",6,7)
+        workspaceswitcher("1:1",2,6)
+        workspaceswitcher("2:2",3,6)
+        workspaceswitcher("3:3",4,6)
+        workspaceswitcher("4:4",2,7)
+        workspaceswitcher("5:5",3,7)
+        workspaceswitcher("6:6",4,7)
+        workspaceswitcher("7:7",2,8)
+        workspaceswitcher("8:8",3,8)
+        workspaceswitcher("9:9",4,8)
+        #workspaceswitcher("10:10",6,6)
 
-    if "Telegram" in workspacelist:
-        lp.LedCtrlXY( 5, 8, 00, 215, 255 )
-    else:
-        lp.LedCtrlXY( 5, 8, 0, 0, 0 )
-
-    if "GenChat" in workspacelist:
-        lp.LedCtrlXY( 7, 8, 86, 66, 255 )
-    else:
-        lp.LedCtrlXY( 7, 8, 0, 0, 0 )
-
-    if "GenChat2" in workspacelist:
-        lp.LedCtrlXY( 6, 7, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 6, 7, 0, 0, 0 )
-
-    if 1 in workspacenumlist:
-        lp.LedCtrlXY( 2, 6, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 2, 6, 0, 0, 0 )
-
-    if 2 in workspacenumlist:
-        lp.LedCtrlXY( 3, 6, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 3, 6, 0, 0, 0 )
-
-    if 3 in workspacenumlist:
-        lp.LedCtrlXY( 4, 6, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 4, 6, 0, 0, 0 )
-
-    if 4 in workspacenumlist:
-        lp.LedCtrlXY( 2, 7, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 2, 7, 0, 0, 0 )
-
-    if 5 in workspacenumlist:
-        lp.LedCtrlXY( 3, 7, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 3, 7, 0, 0, 0 )
-
-    if 6 in workspacenumlist:
-        lp.LedCtrlXY( 4, 7, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 4, 7, 0, 0, 0 )
-
-    if 7 in workspacenumlist:
-        lp.LedCtrlXY( 2, 8, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 2, 8, 0, 0, 0 )
-
-    if 8 in workspacenumlist:
-        lp.LedCtrlXY( 3, 8, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 3, 8, 0, 0, 0 )
-
-    if 9 in workspacenumlist:
-        lp.LedCtrlXY( 4, 8, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 4, 8, 0, 0, 0 )
-
-    if 10 in workspacenumlist:
-        lp.LedCtrlXY( 1, 1, 66, 164, 255 )
-    else:
-        lp.LedCtrlXY( 1, 1, 0, 0, 0 )
-
-lastvol = 0
+### MAIN LOOP
+### This is where the buton state (bs) is retrived in order
+### to pass it into everything else
+### the wait time can be adjusted in order to make the progam use
+### more or less CPU, with the trade off being responsiveness
+### there is a test to see if we even need to update the volume
+### which, if you're crazy and want to remove the delay entirely
+### could be taken out with time.wait for super fast response
+### I noticetd that sometimes doing things like this could crash the
+### program though, so, you're millage may varry. using the default
+### of 50 for the wait should be perfectly responsive for most people
+### though.
 
 while 1:
     time.wait(50)
@@ -326,48 +305,8 @@ while 1:
 
     lastvol = getvol()
 
-    updatevol( bs )
-
-
-    #TODO: Define workspace names at top of file
-    #TODO: move this mess into it's own function
-    if len(bs) > 1:
-        if bs[0] == 6 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("Atom")
-        if bs[0] == 5 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("GitKraken")
-        if bs[0] == 7 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("Dev")
-        if bs[0] == 6 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("Vivaldi")
-        if bs[0] == 5 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("Telegram")
-        if bs[0] == 7 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("GenChat")
-        if bs[0] == 6 and bs[1] == 7 and bs[2] == 127:
-            i3.workspace("GenChat2")
-
-        if bs[0] == 2 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("1:1")
-        if bs[0] == 3 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("2:2")
-        if bs[0] == 4 and bs[1] == 6 and bs[2] == 127:
-            i3.workspace("3:3")
-        if bs[0] == 2 and bs[1] == 7 and bs[2] == 127:
-            i3.workspace("4:4")
-        if bs[0] == 3 and bs[1] == 7 and bs[2] == 127:
-            i3.workspace("5:5")
-        if bs[0] == 4 and bs[1] == 7 and bs[2] == 127:
-            i3.workspace("6:6")
-        if bs[0] == 2 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("7:7")
-        if bs[0] == 3 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("8:8")
-        if bs[0] == 4 and bs[1] == 8 and bs[2] == 127:
-            i3.workspace("9:9")
-        # if bs[0] == 6 and bs[1] == 7 and bs[2] == 127:
-        #     i3.workspace("10")
-
+    updatevol(bs)
+    workspaceswitch(bs)
     testopen()
 
 #The progams really should never actually get here, so, if it does...

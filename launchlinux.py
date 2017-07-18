@@ -1,3 +1,6 @@
+#!/usr/bin/python2
+# coding: latin-1
+
 #   0   1   2   3   4   5   6   7      8
 # +---+---+---+---+---+---+---+---+
 # |0/0|1/0|   |   |   |   |   |   |         0
@@ -71,6 +74,14 @@ def getworkspacelist():
             workspacelist.append(name)
     return (workspacelist)
 
+def getworkspacenumlist():
+    workspaces = i3.get_workspaces()
+    workspacenumlist = ['default']
+    for workspace in workspaces:
+            num = workspace['num']
+            workspacenumlist.append(num)
+    return (workspacenumlist)
+
 def verification(name):
     for pid in psutil.pids():
         p = psutil.Process(pid)
@@ -119,9 +130,7 @@ def displayvol():
         for j in range (0, int(y)):
             lp.LedCtrlXY( 0, j, 0, 0, 0 )
 
-def updatevol():
-    bs = lp.ButtonStateXY()
-    #if bs.count(0) > 1:
+def updatevol(bs):
     if len(bs) > 1:
         if bs[0] == 0 and bs[2] == 127:
             m = alsaaudio.Mixer()
@@ -170,54 +179,144 @@ def updatevol():
 
 def testopen():
     workspacelist = getworkspacelist()
+    workspacenumlist = getworkspacenumlist()
+
     if "Atom" in workspacelist:
-        lp.LedCtrlXY( 6, 6, 0, 255, 0 )
+        lp.LedCtrlXY( 6, 6, 0, 255, 25 )
     else:
         lp.LedCtrlXY( 6, 6, 0, 0, 0 )
 
     if "Dev" in workspacelist:
-        lp.LedCtrlXY( 7, 6, 0, 0, 255 )
+        lp.LedCtrlXY( 7, 6, 255, 0, 140 )
     else:
         lp.LedCtrlXY( 7, 6, 0, 0, 0 )
 
     if "GitKraken" in workspacelist:
-        lp.LedCtrlXY( 5, 6, 0, 0, 255 )
+        lp.LedCtrlXY( 5, 6, 20, 0, 131 )
     else:
         lp.LedCtrlXY( 5, 6, 0, 0, 0 )
 
     if "Vivaldi" in workspacelist:
-        lp.LedCtrlXY( 6, 8, 0, 0, 255 )
+        lp.LedCtrlXY( 6, 8, 255, 0, 0 )
     else:
         lp.LedCtrlXY( 6, 8, 0, 0, 0 )
 
     if "Telegram" in workspacelist:
-        lp.LedCtrlXY( 7, 8, 0, 0, 255 )
-    else:
-        lp.LedCtrlXY( 7, 8, 0, 0, 0 )
-
-    if "GenChat" in workspacelist:
-        lp.LedCtrlXY( 5, 8, 0, 0, 255 )
+        lp.LedCtrlXY( 5, 8, 00, 215, 255 )
     else:
         lp.LedCtrlXY( 5, 8, 0, 0, 0 )
 
+    if "GenChat" in workspacelist:
+        lp.LedCtrlXY( 7, 8, 86, 66, 255 )
+    else:
+        lp.LedCtrlXY( 7, 8, 0, 0, 0 )
+
     if "GenChat2" in workspacelist:
-        lp.LedCtrlXY( 6, 7, 0, 0, 255 )
+        lp.LedCtrlXY( 6, 7, 66, 164, 255 )
     else:
         lp.LedCtrlXY( 6, 7, 0, 0, 0 )
+
+    if 1 in workspacenumlist:
+        lp.LedCtrlXY( 2, 6, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 2, 6, 0, 0, 0 )
+
+    if 2 in workspacenumlist:
+        lp.LedCtrlXY( 3, 6, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 3, 6, 0, 0, 0 )
+
+    if 3 in workspacenumlist:
+        lp.LedCtrlXY( 4, 6, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 4, 6, 0, 0, 0 )
+
+    if 4 in workspacenumlist:
+        lp.LedCtrlXY( 2, 7, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 2, 7, 0, 0, 0 )
+
+    if 5 in workspacenumlist:
+        lp.LedCtrlXY( 3, 7, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 3, 7, 0, 0, 0 )
+
+    if 6 in workspacenumlist:
+        lp.LedCtrlXY( 4, 7, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 4, 7, 0, 0, 0 )
+
+    if 7 in workspacenumlist:
+        lp.LedCtrlXY( 2, 8, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 2, 8, 0, 0, 0 )
+
+    if 8 in workspacenumlist:
+        lp.LedCtrlXY( 3, 8, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 3, 8, 0, 0, 0 )
+
+    if 9 in workspacenumlist:
+        lp.LedCtrlXY( 4, 8, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 4, 8, 0, 0, 0 )
+
+    if 10 in workspacenumlist:
+        lp.LedCtrlXY( 1, 1, 66, 164, 255 )
+    else:
+        lp.LedCtrlXY( 1, 1, 0, 0, 0 )
 
 lastvol = 0
 
 while 1:
     time.wait(50)
     bs = lp.ButtonStateXY()
-    if getvol != lastvol:
+    if getvol() != lastvol:
         displayvol()
 
     lastvol = getvol()
 
-    updatevol()
-    
+    updatevol( bs )
+
     if len(bs) > 1:
         if bs[0] == 6 and bs[1] == 6 and bs[2] == 127:
             i3.workspace("Atom")
+        if bs[0] == 5 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("GitKraken")
+        if bs[0] == 7 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("Dev")
+        if bs[0] == 6 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("Vivaldi")
+        if bs[0] == 5 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("Telegram")
+        if bs[0] == 7 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("GenChat")
+        if bs[0] == 6 and bs[1] == 7 and bs[2] == 127:
+            i3.workspace("GenChat2")
+
+        if bs[0] == 2 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("1:1")
+        if bs[0] == 3 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("2:2")
+        if bs[0] == 4 and bs[1] == 6 and bs[2] == 127:
+            i3.workspace("3:3")
+        if bs[0] == 2 and bs[1] == 7 and bs[2] == 127:
+            i3.workspace("4:4")
+        if bs[0] == 3 and bs[1] == 7 and bs[2] == 127:
+            i3.workspace("5:5")
+        if bs[0] == 4 and bs[1] == 7 and bs[2] == 127:
+            i3.workspace("6:6")
+        if bs[0] == 2 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("7:7")
+        if bs[0] == 3 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("8:8")
+        if bs[0] == 4 and bs[1] == 8 and bs[2] == 127:
+            i3.workspace("9:9")
+        # if bs[0] == 6 and bs[1] == 7 and bs[2] == 127:
+        #     i3.workspace("10")
+
     testopen()
+
+
+
+print("test complete")

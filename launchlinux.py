@@ -1,28 +1,30 @@
-#!/usr/bin/python2
+!/usr/bin/python2
 # coding: latin-1
 
 #   0   1   2   3   4   5   6   7      8
 # +---+---+---+---+---+---+---+---+
-# |0/0|1/0|   |   |   |   |   |   |         0
+# |0/0|1/0|2/0|3/0|4/0|5/0|6/0|7/0|         0
 # +---+---+---+---+---+---+---+---+
 #
 # +---+---+---+---+---+---+---+---+  +---+
-# |0/1|   |   |   |   |   |   |   |  |   |  1
+# |0/1|1/1|2/1|3/1|4/1|5/1|6/1|7/1|  |8/1|  1
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  2
+# |0/2|1/2|2/2|3/2|4/2|5/2|6/2|7/2|  |8/2|  2
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |5/3|   |   |  |   |  3
+# |0/3|1/3|2/3|3/3|4/3|5/3|6/3|7/3|  |8/3|  3
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  4
+# |0/4|1/4|2/4|3/4|4/4|5/4|6/4|7/4|  |8/4|  4
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  5
+# |0/5|1/5|2/5|3/5|4/5|5/5|6/5|7/5|  |8/5|  5
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |4/6|   |   |   |  |   |  6
+# |0/6|1/6|2/6|3/6|4/6|5/6|6/6|7/6|  |8/6|  6
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |   |  7
+# |0/7|1/7|2/7|3/7|4/7|5/7|6/7|7/7|  |8/7|  7
 # +---+---+---+---+---+---+---+---+  +---+
-# |   |   |   |   |   |   |   |   |  |8/8|  8
+# |0/8|1/8|2/8|3/8|4/8|5/8|6/8|7/8|  |8/8|  8
 # +---+---+---+---+---+---+---+---+  +---+
+
+#TODO: don't use pygame time, it's huge.
 import alsaaudio
 import sys
 import launchpad_py as launchpad
@@ -31,26 +33,48 @@ from subprocess import call
 import psutil
 import i3
 
+print("Starting LaunchLinux, a python based hardware linux control panel using the Novation Launchpad")
+print("Version 2.2")
+print("Project by VegaDeftwing")
+print("Launchpad.py by FMMT666")
+print("Special Thanks to FMMT66 for helping me with a facepalm moment.")
+print("i3 python by Ziberna")
+
+#### VERSION HISTORY ####
+# 1.0 intital creation, volume only
+# 1.1 added MPD control, uploaded to GitHub
+# 2.0 added i3 control
+# 2.1 improved i3 control
+# 2.2p removed mpd control temporarily,
+#       setup TODOs and NOTEs for further
+#       advancement, some code moved, meh
+
+### TODO: put config vars here, inc workspace and active modules
+
+#State Tracking, inital state config
+single = 0
+mpdstate = 1
+
 #Launchpad init
 lp = launchpad.Launchpad();
 lp = launchpad.LaunchpadMk2()
-
-
 if lp.Check( 0, "mk2" ):
     lp = launchpad.LaunchpadMk2()
     if lp.Open( 0, "mk2" ):
-        print("Launchpad Mk2")
         mode = "Mk2"
         lp.Reset()
 
-single = 0
-mpdstate = 1
+print("Launchpad Mk2 opened, I hope?")
+
+#Workspace groups to be opened by corosponding launch arrows,
+#if you change the function name be sure to change it where it's called too!
 
 def opendev():
     i3.workspace("Dev")
     i3.workspace("Atom")
     i3.workspace("GitKraken")
-    return
+    print("Dev Workspaces Opened")
+
 # def opensecure:
 #     i3.workspace("Atom")
 #     i3.workspace("Atom")
@@ -60,12 +84,15 @@ def openchat():
     i3.workspace("GenChat")
     i3.workspace("GenChat2")
     i3.workspace("Telegram")
+    print("Chat Workspaces Opened")
 
 def openweb():
     i3.workspace("Vivaldi")
     i3.workspace("Telegram")
-    i3.workspace("Atom")
+    i3.workspace("GenChat")
+    print("Web Workspaces Opened")
 
+#Get names of workspaces that are open
 def getworkspacelist():
     workspaces = i3.get_workspaces()
     workspacelist = ['default']
@@ -74,6 +101,9 @@ def getworkspacelist():
             workspacelist.append(name)
     return (workspacelist)
 
+#Get the number associtated with the open workspaces
+# NOTE: i3-msg will return -1 for all unnamed workspaces
+# so the list can and probably will contain multiple '-1's
 def getworkspacenumlist():
     workspaces = i3.get_workspaces()
     workspacenumlist = ['default']
@@ -82,21 +112,21 @@ def getworkspacenumlist():
             workspacenumlist.append(num)
     return (workspacenumlist)
 
-def verification(name):
-    for pid in psutil.pids():
-        p = psutil.Process(pid)
-        #print p.name()
-        if p.name() == name:
-            return ("running")
+### Verify a progarm is running
+# def verification(name):
+#     for pid in psutil.pids():
+#         p = psutil.Process(pid)
+#         #print p.name()
+#         if p.name() == name:
+#             return ("running")
 
-# print verification("vivaldi-bin")
-# print verification("meh")
-
+#Get the current volume of the system using alsaaudio
 def getvol():
     m = alsaaudio.Mixer()
     vol = m.getvolume()
     return vol
 
+# TODO: This code is a mess, and still has ligting issues at low volums
 
 def displayvol():
     vol = getvol()
@@ -130,6 +160,18 @@ def displayvol():
         for j in range (0, int(y)):
             lp.LedCtrlXY( 0, j, 0, 0, 0 )
 
+# TODO:
+#def gettemp():
+#def displaytemp():
+# NOTE: reuse code from display vol and try to paramaterize
+# for easy gradiants and more customizeablity, including x pos
+
+# TODO:
+# NOTE: display the following using a single 'pixel'
+# and the built in launchpad colors so we get decent speed
+# def CPUusage():
+# def RAMusage():
+
 def updatevol(bs):
     if len(bs) > 1:
         if bs[0] == 0 and bs[2] == 127:
@@ -137,49 +179,57 @@ def updatevol(bs):
             newvol = 8 - bs[1]
             newvol = newvol * 12.5
             m.setvolume(int(newvol))
-            #print newvol
-            # if newvol == 100:
-            #     lp.LedCtrlString( "!", 255, 0, 0, 0 )
-            #     lp.Reset()
-            # if newvol == 0:
-            #     lp.LedCtrlString( "X", 0, 0, 255, 0 )
-            #     lp.Reset()
-        #print bs[0]
-        #print bs[1]
-        if bs[0] == 1 and bs[1] == 8 and bs[2] == 127:
-            if mpdstate == 1:
-                call(["mpc", "pause"])
-                lp.LedCtrlXY( 1, 8, 0, 0, 0 )
-                mpdstate = 0
-            else:
-                call(["mpc", "play"])
-                lp.LedCtrlXY( 1, 8, 0, 255, 50 )
-                mpdstate = 1
 
-        if bs[0] == 1 and bs[1] == 7 and bs[2] == 127:
-            call(["mpc", "next"])
-            lp.LedCtrlXY( 1, 7, 0, 0, 255 )
-        if bs[0] == 1 and bs[1] == 7 and bs[2] == 0:
-            lp.LedCtrlXY( 1, 7, 0, 0, 0 )
-        if bs[0] == 1 and bs[1] == 6 and bs[2] == 127:
-            call(["mpc", "prev"])
-            lp.LedCtrlXY( 1, 6, 0, 0, 255 )
-        if bs[0] == 1 and bs[1] == 6 and bs[2] == 0:
-            lp.LedCtrlXY( 1, 6, 0, 0, 0 )
+            ################################################
+            #TODO: Make MPD control less awful,            #
+            # paramaterize using a new 'MDP' funciton      #
+            # and pass in the plays and the pause          #
+            # possibly make a seperate 'button' funcion    #
+            # for the entire program so I don't have       #
+            # to have so many redundant if's to check if   #
+            # the button isn't active to set it to off,    #
+            # storing these as local states would be much  #
+            # faster, but, I worry that lights may 'stick' #
+            ################################################
 
-        if bs[0] == 1 and bs[1] == 5 and bs[2] == 127:
-            if single == 0:
-                call(["mpc", "single","on"])
-                lp.LedCtrlXY( 1, 5, 255, 0, 255 )
-                single = 1
-            else:
-                call(["mpc", "single","off"])
-                lp.LedCtrlXY( 1, 5, 0, 0, 0 )
-                single = 0
+        # if bs[0] == 1 and bs[1] == 8 and bs[2] == 127:
+        #     if mpdstate == 1:
+        #         call(["mpc", "pause"])
+        #         lp.LedCtrlXY( 1, 8, 0, 0, 0 )
+        #         mpdstate = 0
+        #     else:
+        #         call(["mpc", "play"])
+        #         lp.LedCtrlXY( 1, 8, 0, 255, 50 )
+        #         mpdstate = 1
+        #
+        # if bs[0] == 1 and bs[1] == 7 and bs[2] == 127:
+        #     call(["mpc", "next"])
+        #     lp.LedCtrlXY( 1, 7, 0, 0, 255 )
+        # if bs[0] == 1 and bs[1] == 7 and bs[2] == 0:
+        #     lp.LedCtrlXY( 1, 7, 0, 0, 0 )
+        # if bs[0] == 1 and bs[1] == 6 and bs[2] == 127:
+        #     call(["mpc", "prev"])
+        #     lp.LedCtrlXY( 1, 6, 0, 0, 255 )
+        # if bs[0] == 1 and bs[1] == 6 and bs[2] == 0:
+        #     lp.LedCtrlXY( 1, 6, 0, 0, 0 )
+        #
+        # if bs[0] == 1 and bs[1] == 5 and bs[2] == 127:
+        #     if single == 0:
+        #         call(["mpc", "single","on"])
+        #         lp.LedCtrlXY( 1, 5, 255, 0, 255 )
+        #         single = 1
+        #     else:
+        #         call(["mpc", "single","off"])
+        #         lp.LedCtrlXY( 1, 5, 0, 0, 0 )
+        #         single = 0
 
 def testopen():
     workspacelist = getworkspacelist()
     workspacenumlist = getworkspacenumlist()
+
+    #TODO: using a button state test from above,
+    # set all of these checks into a function so we're not redundantly turring the light off,
+    # or, at least if we are, refactoring is easier
 
     if "Atom" in workspacelist:
         lp.LedCtrlXY( 6, 6, 0, 255, 25 )
@@ -278,6 +328,9 @@ while 1:
 
     updatevol( bs )
 
+
+    #TODO: Define workspace names at top of file
+    #TODO: move this mess into it's own function
     if len(bs) > 1:
         if bs[0] == 6 and bs[1] == 6 and bs[2] == 127:
             i3.workspace("Atom")
@@ -317,6 +370,5 @@ while 1:
 
     testopen()
 
-
-
-print("test complete")
+#The progams really should never actually get here, so, if it does...
+print("Huston, We have a problem.")
